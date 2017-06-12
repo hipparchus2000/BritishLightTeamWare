@@ -1,0 +1,27 @@
+<H1>British Light Teamware</H1>
+<BR>by Jeff Davies<BR>
+A simple system with the raw functionality of Lotus Notes.
+A very early alpha and GNU Public licenced.
+<BR>Version 0.01 "Balti"
+<BR><BR>
+To install, extract to a directory, then create a file in /etc called
+blt.conf containing the path of the "data" directory of blt.<BR>eg:
+  /root/projects/blt/data<BR><BR>
+<A href="blt.tar">Get the Tarball of the tcl/tk files here</A>
+<P>Hoorah 1.10 (12/9/00) now has relication and scrolling on the database list
+(main dialog). Need to apply Close, Refresh and Scrolling to all other
+dialogs using lists (and Close to all dialogs).
+</P><P></P><P>Replication - blt uses linux "cp -u" (update replication). The idea is
+that the data is stored in a zip file on a website (to preserve creation dates).
+The "replicator" shell script should call a ftp script to pull down the zip,
+then unzip it to a "remote data" location on the filestore,
+ replicate with the local data using "cp -u", then rezip remote data, and upload
+it back to the ftp server.</P>
+<P></P> Note in this simplistic approach there is no way to keep the discarded
+side of a replication conflict other than to use a filesystem (journaling?)
+which keep old copies of files. Also, if two clients replicate with the
+ftp server at the same time, problems could ensue. A simple locking file
+used by shell script (through ftp script) could probably prevent this).
+</P>
+ 
+

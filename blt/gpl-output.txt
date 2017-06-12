@@ -1,0 +1,6 @@
+BLT is Light Teamware Copyright (C) 2000 Jeff Davies
+BLT comes with ABSOLUTELY NO WARRANTY; for details
+type `cat GPL-LICENCE in the BLT home directory'.
+This is free software, and you are welcome
+to redistribute it under certain conditions; type `cat GPL-LICENCE'
+in the BLT home directory for details.

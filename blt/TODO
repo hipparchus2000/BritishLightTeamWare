@@ -1,0 +1,40 @@
+BLT is Light Teamware.
+
+I originally called this project TCO and the BIT. I can't remember what
+those stood for, however, later I mistook BIT for BLT which is an
+acronym for Bacon Lettuce and Tomato (sandwiches) which are rather nice.
+
+The same code can be implemented fairly easily in Java, C++ VB
+or whatever takes your fancy.
+
+WHAT IS BLT.
+
+The initial objective is to produce something really simple that is similar
+to Lotus Notes in it's capabilities.
+Initially, the Form Design is very simple, just a list of fields.
+NOTE you can't have a blank field in between two other fields, and capital
+letters are not allowed in field names (or spaces and -*/=\) etc ).
+
+Tasks Outstanding
+
+1. Make Views powerful (sort and using a form selection formula).
+perhaps a saved view index later. 
+2. Make a replicator (this requires adding last modified dates to documents
+NOTE replication will take place via the file system, so to replicate with
+a database on the other side of the world, create a NFS share on one
+machine, mount it on the other, then replicate.
+3. Add security. This can be based on Unix filesystem security.
+4. Add encryption (PGP ?).
+5. Attached files to document of filepath
+ /blt-data-dir-path/db-id.dir/documents/docid will be simpy put
+in the directory /blt-data-dir-path/db-id.dir/documents/docid.dir 
+6. An early task will be XML format output of the data, however long term
+the data including all form design etc might all be stored in XML
+using (for implementation in TCL) a TCL XML parser.
+7. Delete buttons (eg: delete database, form etc with 'are you sure'
+ prompt boxes).
+
+Jeff Davies
+3/8/2000
+ 
+

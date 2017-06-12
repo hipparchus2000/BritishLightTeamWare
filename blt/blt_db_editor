@@ -1,0 +1,239 @@
+#!/bin/sh
+# the next line restarts using wish \
+exec wish4.1 "$0" "$@"
+#BLT Teamware in Tk/Tcl Forms generate documents that are displayed in views. Data can be replicated.
+#Copyright (C) 2000 Jeff Davies.
+
+#This program is free software; you can redistribute it and/or
+#modify it under the terms of the GNU General Public License
+#as published by the Free Software Foundation; either version 2
+#of the License, or (at your option) any later version.
+
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with this program; if not, write to the Free Software
+#Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA&nbsp; 02111-1307,
+#USA.
+
+
+#Jeff Davies, Minyllan, Llandre, Bow Street, Ceredigion, SY24 5BZ
+#+44(0) 1970 611729/820865   jeff@llandre.freeserve.co.uk
+#www.llandre.freeserve.co.uk
+
+set font -*-Helvetica-Medium-R-Normal--*-140-*-*-*-*-*-*
+
+set tcl_precision 10
+
+set fieldwidth 40
+
+label .msg -font $font -wraplength 6i -justify left -text "BLT is Light Teamware in Tk/Tcl: Database Designer 0.01"
+pack .msg -side top
+
+#------fetch data directory--------
+set datapath "/usr/blt/data"
+
+set conffile [open "/etc/blt.conf" r]
+catch {
+  set datapath [gets $conffile]
+} { }
+close $conffile
+
+#=============== BLT DB EDITOR ==================
+frame .db -width 100 -relief raised -borderwidth 5 
+
+#============ When run, db name is passed, and document name ======
+ set thedbname $datapath
+ append thedbname "/system/database"
+ set documentid [lindex $argv 0]
+ if {$documentid=="new"} {
+   set myclock [clock scan "now"]
+   set myclkstr [clock format $myclock -format "%Y%m%d-%H%M%S"]
+   #set mysystem [id host]
+   #set myuser [id user]
+   set mysystem [exec "hostname"]
+   set myuser [exec "whoami"]
+   set documentid $myclkstr-$myuser-$mysystem
+   
+   set dirname $documentid
+   append dirname ".dir"
+ 
+   set execline ""
+   append execline $datapath
+   append execline "/"
+   append execline $dirname
+   puts $execline
+   exec "mkdir" $execline
+   
+   set subdir $execline
+   append subdir "/"
+   append subdir "forms"
+   exec "mkdir" $subdir
+
+   set subdir $execline
+   append subdir "/"
+   append subdir "views"
+   exec "mkdir" $subdir
+
+   set subdir $execline
+   append subdir "/"
+   append subdir "documents"
+   exec "mkdir" $subdir
+
+   set subdir $execline
+   append subdir "/"
+   append subdir "macros"
+   exec "mkdir" $subdir
+  
+ }
+
+
+  
+
+ frame .db.dbname
+  label .db.dbname.fieldtext -text "BLT" -bg Grey -fg Blue  -width $fieldwidth
+  label .db.dbname.value -text $thedbname -bg Grey -fg Black  -width $fieldwidth   
+  pack .db.dbname.fieldtext -side left -expand yes
+  pack .db.dbname.value -side left -expand yes
+  pack .db.dbname
+
+ frame .db.dbid
+  label .db.dbid.fieldtext -text "Document ID" -bg Grey -fg Blue  -width $fieldwidth
+  label .db.dbid.value -text $documentid -bg Grey -fg Black  -width $fieldwidth   
+  pack .db.dbid.fieldtext -side left -expand yes
+  pack .db.dbid.value -side left -expand yes
+  pack .db.dbid
+
+
+
+# in here also date created, and last modified date.
+
+
+ set num 0
+
+
+
+ set myfile [open $thedbname r]
+ set readdata [gets $myfile]
+
+ while {$readdata !="End-of-Data " } {
+  set numstr [format "%d" $num]
+  frame .db.frame$numstr
+  label .db.frame$numstr.fieldtext -text $readdata -bg Black -fg Red  -width $fieldwidth
+  entry .db.frame$numstr.value -textvariable value$readdata -bg White -fg Black  -width $fieldwidth 
+  pack .db.frame$numstr.fieldtext -side left -expand yes
+  pack .db.frame$numstr.value -side left -expand yes
+  pack .db.frame$numstr -side top -expand yes
+
+  #tk_dialog .dlg $numstr $readdata "" 0 "OK" "CANCEL"
+  set readdata [gets $myfile]
+  incr num 1
+ }
+
+ set totalfields $num
+
+
+ pack .db
+
+
+proc savefile "" {
+  global documentid
+  global totalfields
+  global datapath
+
+  set fullpathtodb $datapath
+  append fullpathtodb "/"
+  append fullpathtodb $documentid
+
+  set myfile [open $fullpathtodb w]
+  
+  set num 0
+
+  while {$num <$totalfields} {
+
+    set numstr [format "%d" $num]  
+    puts $myfile [.db.frame$numstr.fieldtext cget -text] 
+    puts $myfile [.db.frame$numstr.value get]
+    incr num 1
+  }
+    
+  puts $myfile "End-of-Data \n\r"
+  close $myfile
+}
+
+proc loadfile "" {
+
+ 
+  global documentid
+  global totalfields
+  global datapath
+
+  set fullpathtodb $datapath
+  append fullpathtodb "/"
+  append fullpathtodb $documentid
+
+  set myfile [open $fullpathtodb r]
+
+  set num 0
+  set fieldname [gets $myfile]
+
+  while {$fieldname!="End-of-Data "} {
+    
+    set fieldvalue [gets $myfile]
+
+    #okay we have got both fieldname and value now
+
+    for {set num 0} {$num<$totalfields} {incr num 1} {
+      set numstr [format "%d" $num]
+      set curfieldname [.db.frame$numstr.fieldtext cget -text]
+      if {$curfieldname==$fieldname} {
+        .db.frame$numstr.value delete 0 end
+        .db.frame$numstr.value insert 0 $fieldvalue
+      }
+    }
+
+    set fieldname [gets $myfile]
+  
+    incr num 1
+  }
+
+  close $myfile
+}
+
+catch {
+  loadfile
+} myerrcode 
+
+
+frame .adrbuttons
+
+button .adrbuttons.load -text "Reload" -bg Yellow -width 10 \
+	-command "loadfile"
+button .adrbuttons.save -text "Save" -bg Yellow -width 10 \
+	-command "savefile"
+
+pack .adrbuttons .adrbuttons.load .adrbuttons.save  -side left -expand yes -pady 2
+
+
+#====================== DB EDITOR  =================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

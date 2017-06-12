@@ -1,0 +1,19 @@
+repl.conf.help.text
+===================
+
+The /etc/blt.repl.conf file contains instructions to the replicator in the format as described below:
+NOTE: all replicas are assumed to be on the same file system, since it is easy in Linux/Unix to
+mount foreign file systems onto the local file system. Other options for example, might be
+to download files to an area by ftp, and synchronise them by the replicator, then upload them again
+by ftp, which would be fine for smaller quantities of data.
+
+FORMAT:
+
+remote-replica-location:databaseID
+
+eg:
+
+/usr/ftp/stuff:20000728-174500-johnsmith-sunserver1
+/usr/ftp/stuff:20000431-221100-jimblakey-solaris2
+
+Jeff Davies

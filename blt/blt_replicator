@@ -1,0 +1,101 @@
+#!/bin/sh
+# the next line restarts using wish \
+exec wish4.1 "$0" "$@"
+
+#BLT Teamware in Tk/Tcl Forms generate documents that are displayed in views. Data can be replicated.
+#Copyright (C) 2000 Jeff Davies.
+
+#This program is free software; you can redistribute it and/or
+#modify it under the terms of the GNU General Public License
+#as published by the Free Software Foundation; either version 2
+#of the License, or (at your option) any later version.
+
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with this program; if not, write to the Free Software
+#Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA&nbsp; 02111-1307,
+#USA.
+
+
+#Jeff Davies, Minyllan, Llandre, Bow Street, Ceredigion, SY24 5BZ
+#+44(0) 1970 611729/820865   jeff@llandre.freeserve.co.uk
+#www.llandre.freeserve.co.uk
+
+set font -*-Helvetica-Medium-R-Normal--*-140-*-*-*-*-*-*
+
+set tcl_precision 10
+
+set fieldwidth 40
+
+label .msg -font $font -wraplength 4i -justify left -text "BLT is Light Teamware Replicator in Tk/Tcl"
+pack .msg -side top
+
+#------fetch data directory--------
+set datapath "/usr/blt/data"
+
+set conffile [open "/etc/blt.conf" r]
+catch {
+  set datapath [gets $conffile]
+} { }
+close $conffile
+
+#=============== REPLICATOR ==================
+frame .replicator -width 100 -relief raised -borderwidth 5 
+
+ frame .replicator.replicatorname
+  label .replicator.replicatorname.fieldtext -text "Replicator" -bg Grey -fg Blue  -width $fieldwidth
+  pack .replicator.replicatorname.fieldtext -side left -expand yes
+  pack .replicator.replicatorname
+  pack .replicator
+
+
+#==============SUBROUTINES=====================
+proc replicate "" {
+  exec "replicator" "&"
+}
+
+proc editreplconf "" {
+  exec "xemacs" "/etc/blt.repl.conf" "&"
+}
+
+proc helpeditconf "" {
+  exec "xemacs" "repl.conf.help.txt" "&"
+}
+
+
+
+frame .adrbuttons
+
+button .adrbuttons.repl -text "Replicate" -bg Yellow -width 10 \
+	-command "replicate"
+button .adrbuttons.conf -text "Configure" -bg Yellow -width 10 \
+	-command "editreplconf"
+button .adrbuttons.help -text "Help" -bg Yellow -width 10 \
+	-command "helpeditconf"
+
+pack .adrbuttons .adrbuttons.repl .adrbuttons.conf .adrbuttons.help  -side left -expand yes -pady 2
+
+
+#======================BLT FORM EDITOR =================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

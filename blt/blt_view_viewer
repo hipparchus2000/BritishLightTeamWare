@@ -1,0 +1,198 @@
+#!/bin/sh
+# the next line restarts using wish \
+exec wish4.1 "$0" "$@"
+
+set font -*-Helvetica-Medium-R-Normal--*-140-*-*-*-*-*-*
+
+set tcl_precision 10
+
+#Example eval
+
+#set cmd "set x 12+3"
+#set thing [eval $cmd]
+
+set fieldwidth 40
+
+label .msg -font $font -wraplength 6i -justify left -text "BLT Groupware in Tk/Tcl: View Designer 0.01"
+pack .msg -side top
+
+
+#=============== BLT VIEW VIEWER ==================
+frame .view -width 100 -relief raised -borderwidth 5 
+
+#============ When run, view name is passed, and document name ======
+ set dbdirpath [lindex $argv 0]
+ set theviewname [lindex $argv 1]
+
+
+ if {$theviewname==""} {return 0}
+  
+
+ frame .view.viewname
+ label .view.viewname.fieldtext -text "View Name" -bg Grey -fg Blue  -width $fieldwidth
+ label .view.viewname.value -text $theviewname -bg Grey -fg Black  -width $fieldwidth   
+ pack .view.viewname.fieldtext -side left -expand yes
+ pack .view.viewname.value -side left -expand yes
+ pack .view.viewname
+
+
+ set dbpath "database path = "
+ append dbpath $dbdirpath
+ frame .view.dbdirpath
+ label .view.dbdirpath.value -text $dbpath -bg Grey -fg Black
+ pack .view.dbdirpath.value
+ pack .view.dbdirpath
+
+
+# in here also date created, and last modified date.
+
+
+ set num 0
+
+ set filepath $dbdirpath
+ append filepath "/views/"
+ append filepath $theviewname
+
+ set myfile [open $filepath r]
+ set formname [gets $myfile]
+
+ set readdata [gets $myfile]
+
+ #TO DO LATER .....
+ #the first value is the form selection formula //not currently used
+ #set formselectionformula readdata
+
+ frame .view.theview
+ frame .view.theview.viewlabels
+ frame .view.theview.viewdata
+
+ while {$readdata !="End-of-Data " } {
+  set numstr [format "%d" $num]
+  set tempvar [split $readdata "="]
+  set columnname [lindex $tempvar 0]
+  set columnformula [lindex $tempvar 1]
+  lappend colforms $columnformula
+
+  label .view.theview.viewlabels.fieldtext$numstr -text $columnname -bg Black -fg Red -width $fieldwidth  
+  listbox .view.theview.viewdata.value$numstr -bg White -fg Black -width $fieldwidth 
+
+  pack .view.theview.viewlabels.fieldtext$numstr -side left
+  pack .view.theview.viewdata.value$numstr -side left 
+
+  set readdata [gets $myfile]
+  incr num 1
+ }
+
+
+  pack .view.theview.viewlabels -ipady 4
+  pack .view.theview.viewdata -ipady 4
+  pack .view.theview
+
+
+ set totalfields $num
+
+
+ pack .view
+
+
+#read documents
+set dbformspath $dbdirpath
+append dbformspath "/documents"
+
+set lscmd "--color=no -A -1 -I*.dir -Isystem"
+set listofdocs [exec "ls" $dbformspath "--color=no" "-A" "-1" "-I*.dir" "-Isystem"]
+
+set doccount [llength $listofdocs]
+
+
+# POPULATE THE VIEW WITH DATA
+
+#for all docs
+for {set li 0} {$li<$doccount} {incr li 1} {
+  set currentdoc [lindex $listofdocs $li]
+
+  set curdocpath $dbformspath
+  append curdocpath "/"
+  append curdocpath $currentdoc
+  puts "Opening doc"
+  puts $curdocpath
+  set curdocfile [open $curdocpath r]
+
+  set curformnameofdoc [gets $curdocfile]
+
+  set fieldname [gets $curdocfile]
+  puts $fieldname  
+
+  while {($fieldname !="End-of-Data ") && ($fieldname!="") } {
+    
+    set fielddata [gets $curdocfile]
+    set field_$fieldname $fielddata
+
+    set fieldname [gets $curdocfile]
+  }
+  close $curdocfile
+
+  #now that doc is read, evaluate column formulae and insert
+  for {set li2 0} {$li2<[llength $colforms]} {incr li2 1} {
+    set tempvar "set result "
+    append tempvar [lindex $colforms $li2]
+    set result "-"
+    catch {
+      eval $tempvar
+    }
+    
+    set numstr [format "%d" $li2]   
+    .view.theview.viewdata.value$numstr insert end $result
+  }
+
+
+}
+
+
+
+
+
+proc opendoc "" {
+  global listofdocs
+  global dbdirpath
+  global formname
+
+  set currentdocsel [.view.theview.viewdata.value0 curselection]
+  set thisdoc [lindex $listofdocs $currentdocsel]
+
+  exec "blt_doc_editor" $dbdirpath $formname $thisdoc  "&"
+
+}
+
+
+
+
+frame .adrbuttons
+
+button .adrbuttons.opendoc -text "Open Document" -bg Yellow -width 14 \
+	-command "opendoc"
+#button .adrbuttons.save -text "Save" -bg Yellow -width 10 \
+#	-command "savefile"
+
+pack .adrbuttons .adrbuttons.opendoc  -side left -expand yes -pady 2
+
+
+#======================BLT VIEW VIEWER=================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

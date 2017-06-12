@@ -1,0 +1,269 @@
+#!/bin/sh
+# the next line restarts using wish \
+exec wish4.1 "$0" "$@"
+
+# BLT = Bacon Lettuce and Tomato (sandwich) or BLT is  Light Teamware
+#BLT Teamware in Tk/Tcl Forms generate documents that are displayed in views. Data can be replicated.
+#Copyright (C) 2000 Jeff Davies.
+
+#This program is free software; you can redistribute it and/or
+#modify it under the terms of the GNU General Public License
+#as published by the Free Software Foundation; either version 2
+#of the License, or (at your option) any later version.
+
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with this program; if not, write to the Free Software
+#Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA&nbsp; 02111-1307,
+#USA.
+
+
+#Jeff Davies, Minyllan, Llandre, Bow Street, Ceredigion, SY24 5BZ
+#+44(0) 1970 611729/820865   jeff@llandre.freeserve.co.uk
+#www.llandre.freeserve.co.uk
+
+set font -*-Helvetica-Medium-R-Normal--*-140-*-*-*-*-*-*
+
+set tcl_precision 10
+
+set fieldwidth 40
+
+label .msg -font $font -wraplength 6i -justify left -text "BLT is Light Teamware in Tk/Tcl: BLT Main Menu"
+pack .msg -side top
+
+#------fetch data directory--------
+set datapath "/usr/blt/data"
+
+set conffile [open "/etc/blt.conf" r]
+catch {
+  set datapath [gets $conffile]
+} { }
+close $conffile
+
+
+
+
+
+#=============== BLT ==================
+frame .blt -width 100 -relief raised -borderwidth 5 
+
+ # make a list of databases in data directory and present them in a list for
+ # opening and a New Button. 
+
+ set listofdbnames "This Db"
+# set listofdbids "2000-30-23-thing"
+
+
+ frame .blt.title
+  label .blt.title.fieldtext -text "BLT" -bg Grey -fg Blue  -width $fieldwidth 
+  pack .blt.title.fieldtext -side left -expand yes
+  pack .blt.title
+
+  frame .blt.dblist
+  listbox .blt.dblist.dbname -bg Grey -fg Blue  -width $fieldwidth
+  listbox .blt.dblist.dbid -bg Grey -fg Black -width $fieldwidth
+ 
+  label .blt.instructions -text "** Select the Database ID (not name) then press a button **" -bg Grey -fg Blue
+
+  pack .blt.dblist.dbname -side left -expand yes
+  pack .blt.dblist.dbid -side left -expand yes
+  pack .blt.dblist
+  pack .blt.instructions
+
+  pack .blt
+
+
+
+#-------------fetch list of dbs and db ids-----------
+proc fetchdblist "" {
+  global listofdbids
+  global licount
+  global datapath
+
+  set lscmd "--color=no -A -1 -I*.dir -Isystem"
+  set listofdbids [exec "ls" $datapath "--color=no" "-A" "-1" "-I*.dir" "-Isystem"]
+
+  set licount [llength $listofdbids]
+
+  for {set li 0} {$li<$licount} {incr li 1} {
+    set currentdbid [lindex $listofdbids $li]
+    .blt.dblist.dbid insert end $currentdbid
+
+    set dbnfile $datapath
+    append dbnfile "/"
+    append dbnfile $currentdbid
+
+    set dbnfileh [open $dbnfile r]
+    set firstfieldname [gets $dbnfileh]
+    set firstfielddata [gets $dbnfileh]
+    .blt.dblist.dbname insert end $firstfielddata
+    close $dbnfileh
+  }
+
+}
+
+set mylistindex 0
+fetchdblist
+  
+
+proc opendb "" {
+ global listofdbids
+ set currentdbsel [.blt.dblist.dbid curselection]
+ set currentdbid [lindex $listofdbids $currentdbsel]
+ puts $listofdbids
+ puts $currentdbsel
+ exec "blt_db_open" $currentdbid "&"
+}
+
+proc editdb "" {
+ global listofdbids
+ set currentdbsel [.blt.dblist.dbid curselection]
+ set currentdbid [lindex $listofdbids $currentdbsel]
+ exec "blt_db_editor" $currentdbid  "&"
+}
+
+proc newdb "" {
+ exec "blt_db_editor" "new" "&"
+} 
+
+proc replicator "" {
+ exec "blt_replicator" "&"
+} 
+
+proc scrolldown "" {
+  global mylistindex
+  global listofdbids
+  set mylistindex [incr mylistindex 1] 
+  set listlen [llength $listofdbids]
+  set lastindex [expr $listlen-10]
+  if {$mylistindex>$lastindex} {
+    set mylistindex $lastindex 
+  }
+  .blt.dblist.dbname yview $mylistindex 
+  .blt.dblist.dbid yview $mylistindex 
+ 
+}
+
+proc scrollup "" {
+  global mylistindex
+  set mylistindex [incr mylistindex -1]
+  if {$mylistindex<0} {
+    set mylistindex 0
+  }
+  .blt.dblist.dbname yview $mylistindex 
+  .blt.dblist.dbid yview $mylistindex 
+ 
+}
+
+proc refresh "" {
+  .blt.dblist.dbname delete 0 end 
+  .blt.dblist.dbid delete 0 end 
+  fetchdblist
+ 
+}
+
+frame .updnbut
+
+button .updnbut.up -text "Up" -bg Yellow -width 10 -command "scrollup"
+button .updnbut.down -text "Down" -bg Yellow -width 10 -command "scrolldown"
+pack .updnbut .updnbut.up .updnbut.down
+
+
+
+frame .adrbuttons
+
+button .adrbuttons.open -text "Open DB" -bg Yellow -width 10 \
+	-command "opendb"
+button .adrbuttons.edit -text "Edit DB" -bg Yellow -width 10 \
+	-command "editdb"
+button .adrbuttons.new -text "New DB" -bg Yellow -width 10 \
+	-command "newdb"
+button .adrbuttons.replicator -text "Replicator" -bg Yellow -width 10 \
+	-command "replicator"
+button .adrbuttons.refresh -text "Refresh" -bg Yellow -width 10 -command "refresh"
+button .adrbuttons.close -text "Close" -bg Yellow -width 10 -command "exit"
+
+pack .adrbuttons .adrbuttons.open .adrbuttons.edit .adrbuttons.new .adrbuttons.replicator .adrbuttons.refresh .adrbuttons.close -side left -expand yes -pady 2
+
+
+#====================== BLT  =================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

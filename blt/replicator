@@ -1,0 +1,12 @@
+#put in here you ftp script to download a zip from an ftp site
+#put in here the unzipping of the zip into the remotedb area
+
+localdb=/root/projects/blt/data
+remotedb=/root/projects/blt/remotedata
+#removed -V numbered and -b
+cp -r -u $localdb/* $remotedb
+cp -r -u $remotedb/* $localdb
+
+#put in here the zipping of the remotedb area
+#put in here the ftp of the remotedb area zip to the ftp site
+

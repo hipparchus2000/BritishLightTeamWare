@@ -1,0 +1,261 @@
+#!/bin/sh
+# the next line restarts using wish \
+exec wish4.1 "$0" "$@"
+
+# BLT db open dialog
+#BLT Teamware in Tk/Tcl Forms generate documents that are displayed in views. Data can be replicated.
+#Copyright (C) 2000 Jeff Davies.
+
+#This program is free software; you can redistribute it and/or
+#modify it under the terms of the GNU General Public License
+#as published by the Free Software Foundation; either version 2
+#of the License, or (at your option) any later version.
+
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with this program; if not, write to the Free Software
+#Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA&nbsp; 02111-1307,
+#USA.
+
+
+#Jeff Davies, Minyllan, Llandre, Bow Street, Ceredigion, SY24 5BZ
+#+44(0) 1970 611729/820865   jeff@llandre.freeserve.co.uk
+#www.llandre.freeserve.co.uk
+
+set font -*-Helvetica-Medium-R-Normal--*-140-*-*-*-*-*-*
+
+set tcl_precision 10
+
+set fieldwidth 40
+
+label .msg -font $font -wraplength 6i -justify left -text "BLT is Light Teamware in Tk/Tcl: BLT Main Menu"
+pack .msg -side top
+
+#------fetch data directory--------
+set datapath "/usr/blt/data"
+
+set conffile [open "/etc/blt.conf" r]
+catch {
+  set datapath [gets $conffile]
+} { }
+close $conffile
+
+set dbid [lindex $argv 0]
+
+set dbpath $datapath
+append dbpath "/"
+append dbpath $dbid
+
+set dbh [open $dbpath r]
+set firstfieldname [gets $dbh]
+set dbname [gets $dbh]
+close $dbh
+
+set dbdirpath $dbpath
+append dbdirpath ".dir"
+
+set dbformspath $dbdirpath
+append dbformspath "/forms"
+
+set dbviewspath $dbdirpath
+append dbviewspath "/views"
+
+
+#=============== BLT ==================
+frame .blt -width 100 -relief raised -borderwidth 5 
+
+ # make a list of databases in data directory and present them in a list for
+ # opening and a New Button. 
+
+
+
+ frame .blt.title
+ frame .blt.id
+  label .blt.title.fieldtext -text "Database" -bg Grey -fg Blue  -width $fieldwidth 
+  label .blt.title.value -text $dbname -bg Grey -fg Blue  -width $fieldwidth
+
+  label .blt.id.fieldtext -text "Db ID" -bg Grey -fg Blue  -width $fieldwidth 
+  label .blt.id.value -text $dbid -bg Grey -fg Blue  -width $fieldwidth
+
+ 
+  pack .blt.title.fieldtext -side left -expand yes
+  pack .blt.title.value -side left -expand yes
+  pack .blt.title
+  pack .blt.id.fieldtext -side left -expand yes
+  pack .blt.id.value -side left -expand yes
+  pack .blt.id
+
+
+  frame .blt.formlist
+  label .blt.formlist.fieldtext -text "Forms" -bg Blue -fg White  -width $fieldwidth 
+  listbox .blt.formlist.formname -bg Grey -fg Blue  -width $fieldwidth 
+  pack .blt.formlist.fieldtext
+  pack .blt.formlist.formname -side left -expand yes
+  pack .blt.formlist
+
+  frame .blt.viewlist
+  label .blt.viewlist.fieldtext -text "Views" -bg Green -fg Black  -width $fieldwidth 
+  listbox .blt.viewlist.viewname -bg Grey -fg Blue  -width $fieldwidth
+  pack .blt.viewlist.fieldtext 
+  pack .blt.viewlist.viewname -side left -expand yes
+  pack .blt.viewlist
+
+  pack .blt
+
+
+
+#------------- fetch list of forms -----------
+
+set lscmd "--color=no -A -1 -I*.dir -Isystem"
+set listofforms [exec "ls" $dbformspath "--color=no" "-A" "-1" "-I*.dir" "-Isystem"]
+
+set licount [llength $listofforms]
+
+for {set li 0} {$li<$licount} {incr li 1} {
+  set currentname [lindex $listofforms $li]
+  .blt.formlist.formname insert end $currentname
+}
+
+#------------- fetch list of views -----------
+
+set lscmd "--color=no -A -1 -I*.dir -Isystem"
+set listofviews [exec "ls" $dbviewspath "--color=no" "-A" "-1" "-I*.dir" "-Isystem"]
+
+set licount [llength $listofviews]
+
+for {set li 0} {$li<$licount} {incr li 1} {
+  set currentname [lindex $listofviews $li]
+  .blt.viewlist.viewname insert end $currentname
+}
+
+#-------------------- end of lists
+  
+# newdoc editform newform openview editview newview
+#
+
+proc newdoc "" {
+ global dbdirpath
+ global listofforms
+
+
+ set curform [lindex $listofforms [.blt.formlist.formname curselection]]
+ if {$curform==""} {
+   tk_dialog .dlgerr1 "Error" "You have not selected a form" "" 0 "OK"
+   return 0
+ }
+
+ exec "blt_doc_editor" $dbdirpath $curform "new"  "&" 
+}
+
+proc editform "" {
+ global dbdirpath
+ global listofforms
+ set curform [lindex $listofforms [.blt.formlist.formname curselection]]
+ if {$curform==""} {
+   tk_dialog .dlgerr1 "Error" "You have not selected a form" "" 0 "OK"
+   return 0
+ }
+
+ exec "blt_form_editor" $dbdirpath $curform "&"
+}
+
+proc newform "" {
+ global dbdirpath
+ exec "blt_form_editor" $dbdirpath  "&"
+} 
+
+proc openview "" {
+ global dbdirpath
+ global listofviews
+
+
+ set curview [lindex $listofviews [.blt.viewlist.viewname curselection]]
+ if {$curview==""} {
+   tk_dialog .dlgerr1 "Error" "You have not selected a view" "" 0 "OK"
+   return 0
+ }
+
+ exec "blt_view_viewer" $dbdirpath $curview "new"  "&" 
+}
+
+proc editview "" {
+ global dbdirpath
+ global listofviews
+ set curview [lindex $listofviews [.blt.viewlist.viewname curselection]]
+ if {$curview==""} {
+   tk_dialog .dlgerr1 "Error" "You have not selected a view" "" 0 "OK"
+   return 0
+ }
+
+ exec "blt_view_editor" $dbdirpath $curview "&"
+}
+
+proc newview "" {
+ global dbdirpath
+ exec "blt_view_editor" $dbdirpath "&"
+} 
+
+#frame .adrbuttons
+
+button .blt.formlist.newdoc -text "New Doc" -bg Yellow -width 10 \
+	-command "newdoc"
+button .blt.formlist.editform -text "Edit Form" -bg Yellow -width 10 \
+	-command "editform"
+button .blt.formlist.newform -text "New Form" -bg Yellow -width 10 \
+	-command "newform"
+
+button .blt.viewlist.openview -text "Open View" -bg Yellow -width 10 \
+	-command "openview"
+button .blt.viewlist.editview -text "Edit View" -bg Yellow -width 10 \
+	-command "editview"
+button .blt.viewlist.newview -text "New View" -bg Yellow -width 10 \
+	-command "newview"
+
+pack .blt.formlist .blt.formlist.newdoc .blt.formlist.editform .blt.formlist.newform
+
+pack .blt.viewlist .blt.viewlist.openview .blt.viewlist.editview .blt.viewlist.newview
+
+#  -side left -expand yes -pady 2
+
+
+#====================== DB OPEN  =================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

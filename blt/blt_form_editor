@@ -1,0 +1,168 @@
+#!/bin/sh
+# the next line restarts using wish \
+exec wish4.1 "$0" "$@"
+
+#BLT Teamware in Tk/Tcl Forms generate documents that are displayed in views. Data can be replicated.
+#Copyright (C) 2000 Jeff Davies.
+
+#This program is free software; you can redistribute it and/or
+#modify it under the terms of the GNU General Public License
+#as published by the Free Software Foundation; either version 2
+#of the License, or (at your option) any later version.
+
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with this program; if not, write to the Free Software
+#Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA&nbsp; 02111-1307,
+#USA.
+
+
+#Jeff Davies, Minyllan, Llandre, Bow Street, Ceredigion, SY24 5BZ
+#+44(0) 1970 611729/820865   jeff@llandre.freeserve.co.uk
+#www.llandre.freeserve.co.uk
+
+set font -*-Helvetica-Medium-R-Normal--*-140-*-*-*-*-*-*
+
+set tcl_precision 10
+
+set fieldwidth 40
+
+label .msg -font $font -wraplength 4i -justify left -text "BLT is Light Teamware Form Editor in Tk/Tcl"
+pack .msg -side top
+
+set dbdirpath [lindex $argv 0]
+set formName [lindex $argv 1]
+
+
+#=============== FORM EDITOR ==================
+frame .form -width 100 -relief raised -borderwidth 5 
+
+ frame .form.formname
+  label .form.formname.fieldtext -text "Form Name" -bg Grey -fg Blue  -width $fieldwidth
+  entry .form.formname.value -textvariable formName -bg White -fg Black  -width $fieldwidth
+  pack .form.formname.fieldtext -side left -expand yes
+  pack .form.formname.value -side left -expand yes
+  pack .form.formname
+
+ set dbpath "database path = "
+ append dbpath $dbdirpath
+ frame .form.dbdirpath
+ label .form.dbdirpath.value -text $dbpath -bg Grey -fg Black
+ pack .form.dbdirpath.value
+ pack .form.dbdirpath
+
+ set num 0
+
+ while { $num<20 } {
+   set numstr ""
+   append numstr [format "%d" $num] 
+   incr num 1
+   frame .form.frame$numstr
+    label .form.frame$numstr.fieldtext -text $numstr -bg Black -fg Red  -width $fieldwidth
+    entry .form.frame$numstr.value -textvariable $numstr -bg White -fg Black  -width $fieldwidth 
+    pack .form.frame$numstr.fieldtext -side left -expand yes
+    pack .form.frame$numstr.value -side left -expand yes
+    pack .form.frame$numstr
+  }
+
+pack .form
+
+
+#==============SUBROUTINES=====================
+proc savefile "" {
+  global dbdirpath
+  set filepath $dbdirpath
+  append filepath "/forms/"
+  append filepath [.form.formname.value get]
+
+  set myfile [open $filepath w]
+  
+  set num 0
+
+  while {$num <20} {
+    set fieldname "field"
+    append fieldname [format "%d" $num]
+    set framename "frame"
+    append framename [format "%d" $num]
+
+    set writedata [.form.$framename.value get]
+    if {$writedata ==""} then {} else {puts $myfile $writedata}
+    incr num 1
+  }
+    
+  puts $myfile "End-of-Data \n\r"
+  close $myfile
+}
+
+proc loadfile "" {
+  global dbdirpath
+  set filepath $dbdirpath
+  append filepath "/forms/"
+  append filepath [.form.formname.value get]
+
+  set myfile [open $filepath r]
+
+  set num 0
+  set inval [gets $myfile]
+
+  while {($num <20) && ($inval!="End-of-Data ")} {
+    
+    set numstr [format "%d" $num]
+    .form.frame$numstr.value delete 0 end
+    .form.frame$numstr.value insert 0 $inval
+
+    set inval [gets $myfile]
+    incr num 1
+  }
+
+  if {$num<20} {
+    set numstr [format "%d" $num]
+    .form.frame$numstr.value delete 0 end
+    incr num 1
+  }
+
+  close $myfile
+}
+
+
+
+#set formName "test form"
+#.form.formname.value insert 0 $formName
+if {$formName!=""} loadfile
+
+
+
+
+frame .adrbuttons
+
+button .adrbuttons.load -text "Load" -bg Yellow -width 10 \
+	-command "loadfile"
+button .adrbuttons.save -text "Save" -bg Yellow -width 10 \
+	-command "savefile"
+
+pack .adrbuttons .adrbuttons.load .adrbuttons.save  -side left -expand yes -pady 2
+
+
+#======================BLT FORM EDITOR =================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

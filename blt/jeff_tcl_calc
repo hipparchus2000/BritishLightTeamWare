@@ -1,0 +1,186 @@
+
+#!/bin/sh
+# the next line restarts using wish \
+exec wish4.1 "$0" "$@"
+
+# My Calculator
+#BLT Teamware in Tk/Tcl Forms generate documents that are displayed in views. Data can be replicated.
+#Copyright (C) 2000 Jeff Davies.
+
+#This program is free software; you can redistribute it and/or
+#modify it under the terms of the GNU General Public License
+#as published by the Free Software Foundation; either version 2
+#of the License, or (at your option) any later version.
+
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with this program; if not, write to the Free Software
+#Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA&nbsp; 02111-1307,
+#USA.
+
+
+#Jeff Davies, Minyllan, Llandre, Bow Street, Ceredigion, SY24 5BZ
+#+44(0) 1970 611729/820865   jeff@llandre.freeserve.co.uk
+#www.llandre.freeserve.co.uk
+
+set font -*-Helvetica-Medium-R-Normal--*-140-*-*-*-*-*-*
+
+set tcl_precision 10
+
+set null ""
+
+set dpused 0
+
+set operand 0
+
+set operation ""
+
+label .msg -font $font -wraplength 4i -justify left -text "Jeff's Calculator in Tk/Tcl"
+pack .msg -side top
+
+frame .register -bg Black -width 30
+label .register.text -justify right -text "0" -bg Black -fg Red -width 30
+pack .register.text -side right
+pack .register -side right
+
+proc clear_register "" {
+        .register.text config -text 0 
+        global dpused
+        set dpused 0
+}
+
+proc calcfunc thisoperation {
+        global operand
+        global operation
+        set operand [.register.text cget -text]
+        .register.text config -text 0
+        set operation $thisoperation
+#        .msg config -text $operation    line_for_testing_operation
+}
+
+proc sign "" {
+        set opand [.register.text cget -text]
+        set result [expr $opand * -1.0]
+        .register.text config -text $result
+}
+        
+        
+
+proc equals "" {
+        global operand
+        global operation
+
+        set operand2 [.register.text cget -text]
+        set result 0
+        switch $operation {
+                "plus" {
+                        set result [expr ($operand + $operand2 + 0.0)]
+                        }
+                "minus" {
+                        set result [expr (($operand - $operand2) + 0.0)]
+                        }
+                "divide" {
+                        set result [expr $operand / ($operand2 + 0.0)]
+                        }
+                "times" {
+                        set result [expr (($operand * $operand2) + 0.0)]
+                        }
+        }
+        
+        set operand 0
+        set operation ""
+        .register.text config -text $result
+}
+
+proc process_data {data} {
+
+	# use the global variable dpused
+	global dpused
+	
+        #if dpused is set and data is a decimal point, null the decimal point
+        if {($dpused == 1) && ($data == ".")} {set data ""}
+                                                
+	# get the old data
+	set old_data [.register.text cget -text]
+ 		
+	# find it's length
+	set len_old_data [string length $old_data] 
+        	
+	# if the old data is a leading zero  and a decimal
+	# point was not entered, (that is it is a number like
+	# '2'), then set old data to null string so
+	# that the display shows '2' not '02'
+	if {($old_data == 0) && ($len_old_data == 1)} {    
+       		if {($data != ".")} {                      
+               	set old_data ""}                   
+       	}                                         
+       	.register.text config -text $old_data$data   
+
+        if {($dpused == 0) && ($data == ".")} {set dpused 1}
+}
+
+
+frame .buttonsa
+
+button .buttonsa.plus -text "+" -bg Yellow -width 10 \
+	-command "calcfunc plus"
+button .buttonsa.minus -text "-" -bg Yellow -width 10 \
+	-command "calcfunc minus"
+button .buttonsa.clear -text "CLR" -bg Orange -width 10 \
+	-command "clear_register"
+pack .buttonsa.plus .buttonsa.minus .buttonsa.clear  -side left -expand yes -pady 2
+
+frame .buttonsb
+
+button .buttonsb.times -text "*" -bg Yellow -width 10 \
+	-command "calcfunc times"
+button .buttonsb.divide -text "/" -bg Yellow -width 10 \
+	-command "calcfunc divide"
+button .buttonsb.sign -text "+/-" -bg Yellow -width 10 \
+	-command "sign"
+pack .buttonsb.times .buttonsb.divide .buttonsb.sign  -side left -expand yes -pady 2
+
+
+frame .buttons1
+
+button .buttons1.b7 -text "7" -bg LightBlue -width 10 \
+	-command "process_data 7"
+button .buttons1.b8 -text "8" -bg LightBlue -width 10 \
+	-command "process_data 8"
+button .buttons1.b9 -text "9" -bg LightBlue -width 10 \
+	-command "process_data 9"
+pack .buttons1.b7 .buttons1.b8 .buttons1.b9  -side left -expand yes -pady 2
+
+frame .buttons2
+button .buttons2.b4 -text "4" -bg LightBlue -width 10 \
+	-command "process_data 4"
+button .buttons2.b5 -text "5" -bg LightBlue -width 10 \
+	-command "process_data 5"
+button .buttons2.b6 -text "6" -bg LightBlue -width 10 \
+	-command "process_data 6"
+pack .buttons2.b4 .buttons2.b5 .buttons2.b6  -side left -expand yes -pady 2
+
+frame .buttons3
+button .buttons3.b1 -text "1" -bg LightBlue -width 10 \
+	-command "process_data 1"
+button .buttons3.b2 -text "2" -bg LightBlue -width 10 \
+	-command "process_data 2"
+button .buttons3.b3 -text "3" -bg LightBlue -width 10 \
+	-command "process_data 3"
+pack .buttons3.b1 .buttons3.b2 .buttons3.b3  -side left -expand yes -pady 2
+
+frame .buttons4
+button .buttons4.b0 -text "0" -bg LightBlue -width 10 \
+	-command "process_data 0"
+set dp "."
+button .buttons4.bdp -text "." -bg LightBlue -width 10 \
+	-command "process_data ."
+button .buttons4.equals -text "=" -bg Yellow -width 10 \
+	-command "equals"
+pack .buttons4.b0 .buttons4.bdp .buttons4.equals  -side left -expand yes -pady 2
+
+pack .register .buttonsa .buttonsb .buttons1 .buttons2 .buttons3 .buttons4 -side top -expand yes 

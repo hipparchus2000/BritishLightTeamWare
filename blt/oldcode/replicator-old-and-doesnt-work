@@ -1,0 +1,9 @@
+#replicator
+set replconf [open "/etc/blt.repl.conf" r]
+set reploc [gets $replconf]
+
+close $replconf
+
+
+set
+
